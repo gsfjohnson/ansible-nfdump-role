@@ -1,0 +1,46 @@
+#
+# nfOptions: nfcapd options
+#
+nfOptions="-S 0 -D -w -z -t 300"
+
+#
+# nfDirectory: where nfcapd dump files will be stored
+#
+nfDirectory="{{nf_directory}}"
+
+#
+# nfLocalAddress: defaults to all interfaces
+#
+nfLocalAddress="{{nf_local_address|default('')}}"
+
+#
+# nfDestinations: defaults to "0/127.0.0.1/9995"
+#
+#  * override ftDestination on a per-sender basis
+#  *   with ftDestinationX="foobar", where X
+#  *   is the array position within ftRemoteSender
+#  *   and foobar is the same format as ftDestinations
+#
+{% if nf_destination is defined %}
+ftDestinations="{{nf_destination}}"
+{% else %}
+#ftDestinations="0/127.0.0.1/9995"
+{% endif %}
+
+{% if ft_destinations is defined %}
+{% for d in ft_destinations %}
+# {{d.comment}}
+ftDestination{{d.number}}="{{d.dest}}"
+{% endfor %}
+{% endif %}
+
+#
+# nfRemoteSenders: defaults to "0:9996"; may specify multiple seperated by space,
+#
+{% if nf_remote_senders is defined and nf_remote_senders|count > 0 %}
+nfRemoteSenders="\
+{% for rs in nf_remote_senders %}
+{{rs}}{% if loop.last %}"{% endif %}{% if not loop.last %} \
+{% endif %}{% endfor %}
+{% endif %}
+

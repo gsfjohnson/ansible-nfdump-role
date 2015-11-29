@@ -1,0 +1,16 @@
+---
+
+- name: create nfdump directory
+  file:
+    name={{nf_directory}}
+    state=directory
+    owner=root
+    group=root
+    mode=0644
+
+- name: service enable, start
+  service:
+    name={{nf_svc_name}}
+    state={{nf_svc_state}}
+    enabled={{nf_svc_enabled}}
+

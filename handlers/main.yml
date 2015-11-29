@@ -1,0 +1,5 @@
+---
+
+- name: svc restart nfcapd
+  service: name={{nf_svc_name}} state=restarted
+  when: nf_svc_state == "started"

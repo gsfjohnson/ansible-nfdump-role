@@ -1,0 +1,29 @@
+---
+
+- name: install latest epel-release
+  yum:
+    name=epel-release
+    state=latest
+
+- name: install pkg
+  yum:
+    name={{nf_pkg_name}}
+    state={{nf_pkg_state}}
+
+- name: copy multi-nfcapd init
+  copy:
+    src=multi-nfcapd.init
+    dest=/etc/init.d/multi-nfcapd
+    owner=root
+    group=root
+    mode=0755
+  notify: svc restart nfcapd
+
+- name: multi-nfcapd sysconfig template
+  template:
+    src=multi-nfcapd.sysconfig.j2
+    dest=/etc/sysconfig/multi-nfcapd
+    owner=root
+    group=root
+    mode=0755
+  notify: svc restart nfcapd

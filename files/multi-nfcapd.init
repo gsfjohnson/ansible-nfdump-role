@@ -1,0 +1,83 @@
+#!/bin/sh
+# chkconfig: 2345 90 10
+# config: /etc/sysconfig/multi-nfcapd
+
+# Set variables.
+xxDaemonName=nfcapd
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+[ -f /etc/sysconfig/network ] || exit 0
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+# Check for binary.
+[ -x /usr/bin/${xxDaemonName} ] || exit 0
+
+# Check for configuration.
+[ ! -f /etc/sysconfig/${0//*\/} ] && echo "Must configure /etc/sysconfig/${0//*\/}" && exit 0
+. /etc/sysconfig/${0//*\/}
+
+# Set configuration defaults (if needed).
+[ "${nfOptions}" == "" ]       && nfOptions="-D -w -z"
+[ "${nfLocalAddress}" == "" ]  && nfLocalAddr=""
+[ "${nfLocalAddress}" != "" ]  && nfLocalAddr="-b ${nfLocalAddress}"
+[ "${nfRemoteSenders}" == "" ] && nfRemoteSenders="0:9996"
+[ "${nfDestinations}" == "" ]  && nfDestinations="none,127.0.0.1,/var/cache/nfcapd"
+[ "${nfDirectory}" == "" ]     && nfDirectory="/var/cache/nfcapd"
+
+case "$1" in
+  start)
+    xxIndex=1
+    for xxRemoteAddr in `echo $nfRemoteSenders`; do
+      xxRemoteIP=${xxRemoteAddr//\:*}
+      xxRemotePort=${xxRemoteAddr//*\:}
+      xxRemoteHostname=`host $xxRemoteIP | head -n1 | cut -d\  -f5 | cut -d. -f1`
+      [ "${xxRemoteHostname}" == "3(NXDOMAIN)" ] && xxRemoteHostname=router
+      [ "${xxRemoteHostname}" == "2(SERVFAIL)" ] && xxRemoteHostname=router
+      # xxDestination="$nfDestinations"
+      # [ "x$(eval echo '$'ftDestination$xxIndex)x" != "xx" ] && xxDestination="$(eval echo '$'ftDestination$xxIndex)"
+      xxLocalAddr="${nfLocalAddr}"
+      [ "x$(eval echo '$'nfLocalAddress$xxIndex)x" != "xx" ] && xxLocalAddr="-b $(eval echo '$'nfLocalAddress$xxIndex)"
+      if [ "${xxRemoteIP}" != "" ] && [ "${xxRemotePort}" != "" ]; then
+        [ ! -d ${nfDirectory}/$xxRemoteIP ] && mkdir ${nfDirectory}/$xxRemoteIP
+        echo -n $"Starting ${xxDaemonName} for exporter ${xxRemoteAddr} "
+        #echo -n "$xxDaemonName $nfOptions ${xxLocalAddr} -n ${xxRemoteHostname},${xxRemoteIP},${nfDirectory}/${xxRemoteIP} -p ${xxRemotePort}"
+        #daemon $xxDaemonName $nfOptions ${xxLocalAddr} -n ${xxRemoteHostname},${xxRemoteIP},${nfDirectory}/${xxRemoteIP} -p ${xxRemotePort}
+        echo -n "$xxDaemonName $nfOptions ${xxLocalAddr} -l ${nfDirectory}/${xxRemoteIP} -p ${xxRemotePort}"
+        daemon $xxDaemonName $nfOptions ${xxLocalAddr} -l ${nfDirectory}/${xxRemoteIP} -p ${xxRemotePort}
+        echo
+      fi
+      let xxIndex++
+    done
+
+    touch /var/lock/subsys/$xxDaemonName
+    ;;
+
+  stop)
+        echo -n $"Stopping ${xxDaemonName}: "
+        killproc $xxDaemonName -3
+        echo
+
+        rm -f /var/lock/subsys/$xxDaemonName
+        ;;
+
+  restart)
+        $0 stop
+        $0 start
+        ;;
+
+  status)
+        status $xxDaemonName
+        ;;
+
+  *)
+        echo "Usage: $0 { start | restart | stop | status }"
+
+esac
+exit 0
+

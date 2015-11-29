@@ -1,0 +1,10 @@
+---
+
+nf_pkg_name: nfdump
+nf_pkg_state: installed
+
+nf_svc_name: nfcapd
+nf_svc_state: started
+nf_svc_enabled: true
+
+nf_directory: /var/log/nfdump
