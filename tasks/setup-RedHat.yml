@@ -5,6 +5,11 @@
     name=epel-release
     state=latest
 
+- name: install home:gsfjohnson repo
+  copy: src=home:gsfjohnson.repo
+        dest=/etc/yum.repos.d/
+        owner=root group=root mode=0644
+
 - name: install pkg
   yum:
     name={{nf_pkg_name}}
