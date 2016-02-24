@@ -5,8 +5,8 @@
     name={{nf_directory}}
     state=directory
     owner=root
-    group=root
-    mode=0644
+    group=users
+    mode=0754
 
 - name: service enable, start
   service:
