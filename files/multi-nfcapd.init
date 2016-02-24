@@ -16,7 +16,7 @@ xxDaemonName=nfcapd
 [ ${NETWORKING} = "no" ] && exit 0
 
 # Check for binary.
-[ -x /usr/bin/${xxDaemonName} ] || exit 0
+[ -x /usr/sbin/${xxDaemonName} ] || exit 0
 
 # Check for configuration.
 [ ! -f /etc/sysconfig/${0//*\/} ] && echo "Must configure /etc/sysconfig/${0//*\/}" && exit 0
